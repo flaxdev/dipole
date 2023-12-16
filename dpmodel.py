@@ -37,6 +37,13 @@ class dipole:
         self.hypervolume = hypervolume
         self.kappa = k
 
+    def __str__(self):
+        return f'coords: {self.coord} \n azim: {self.azim} \n azenith: {self.azenith} \n hypervolume: {self.hypervolume} \n kappa: {self.kappa} \n'
+    
+    def __repr__(self):
+        return f'coords: {self.coord} \n azim: {self.azim} \n azenith: {self.azenith} \n hypervolume: {self.hypervolume} \n kappa: {self.kappa} \n'
+
+
     def moment(self):
         # dipole moment
 
@@ -233,13 +240,19 @@ class dipole:
     # invert only for displacements
     @classmethod
     def invert(cls, points, displacements, coord_ranges, azim_range, azenith_range, hypervolume_range, k_range, displerrors,
-                          coord0=[0,0,0], azim0=0, azenith0=0, hypervolume0=1e7, k0=0, nu=0.25, alg='dual_annealing', err='wrmse'):
+                          coord0=None, azim0=None, azenith0=None, hypervolume0=None, k0=None, nu=0.25, alg='dual_annealing', err='wrmse'):
         
         errfunc = cls.__errfunc(points, displacements, displerrors, nu, err)              
         lw = [coord_ranges[0,0], coord_ranges[0,1], coord_ranges[0,2], azim_range[0], azenith_range[0], hypervolume_range[0], k_range[0]]        
-        up = [coord_ranges[1,0], coord_ranges[1,1], coord_ranges[1,2], azim_range[1], azenith_range[1], hypervolume_range[1], k_range[1]]
+        up = [coord_ranges[1,0], coord_ranges[1,1], coord_ranges[1,2], azim_range[1], azenith_range[1], hypervolume_range[1], k_range[1]]               
         
-        bounds=list(zip(lw, up))
+        bounds=np.array(list(zip(lw, up)))
+        
+        coord0 = coord0 if coord0 is not None else np.mean(bounds[:3,:], axis=1)
+        azim0 = azim0 if azim0 is not None else np.mean(bounds[3,:])
+        azenith0 = azenith0 if azenith0 is not None else np.mean(bounds[4,:])
+        hypervolume0 = hypervolume0 if hypervolume0 is not None else np.mean(bounds[5,:])
+        k0 = k0 if k0 is not None else np.mean(bounds[6,:])
                 
         x0 = [coord0[0], coord0[1], coord0[2], azim0, azenith0, hypervolume0, k0]
         if alg=='dual_annealing':
